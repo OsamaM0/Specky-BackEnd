@@ -43,11 +43,12 @@ class BaseController:
         """
         database_path = os.path.join(self.database_dir, db_name)
 
+        # Ensure the directory exists, avoid error if it already exists
         try:
             os.makedirs(database_path, exist_ok=True)
             print(f"Directory ensured at: {database_path}")
         except Exception as e:
-            print(f"Error ensuring database directory at {database_path}: {e}")
+            print(f"Failed to ensure database directory at {database_path}: {e}")
             raise
 
         return database_path
