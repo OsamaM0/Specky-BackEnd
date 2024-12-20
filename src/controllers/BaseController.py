@@ -32,19 +32,22 @@ class BaseController:
         return ''.join(random.choices(string.ascii_lowercase + string.digits, k=length))
 
     def get_database_path(self, db_name: str):
-        """Get the path to a database file given the name of the database
+        """
+        Get the path to a database file given the name of the database.
 
         Args:
-            db_name (str): Name of the database
+            db_name (str): Name of the database.
 
         Returns:
-            _type_: Path to the database file
+            str: Path to the database file.
         """
-        database_path = os.path.join(
-            self.database_dir, db_name
-        )
+        database_path = os.path.join(self.database_dir, db_name)
 
-        if not os.path.exists(database_path):
-            os.makedirs(database_path)
+        try:
+            os.makedirs(database_path, exist_ok=True)
+            print(f"Directory ensured at: {database_path}")
+        except Exception as e:
+            print(f"Error ensuring database directory at {database_path}: {e}")
+            raise
 
         return database_path
