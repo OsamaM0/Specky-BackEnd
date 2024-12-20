@@ -47,8 +47,7 @@ class BaseController:
         try:
             os.makedirs(database_path, exist_ok=True)
             print(f"Directory ensured at: {database_path}")
-        except Exception as e:
+        except Exception as e:  # Remove the raise statement
             print(f"Failed to ensure database directory at {database_path}: {e}")
-            raise
 
         return database_path
