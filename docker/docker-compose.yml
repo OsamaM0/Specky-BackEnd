@@ -1,22 +1,19 @@
 services:
-  mongodb:
-    image: mongo:7-jammy
-    container_name: mongodb
+  qdrant:
+    image: qdrant/qdrant
+    container_name: qdrant
     ports:
-      - "27007:27017"
+      - "6333:6333"  # Expose Qdrant's default port
     volumes:
-      - mongodata:/data/db
+      - qdrantdata:/qdrant/storage  # Persist Qdrant data locally
     environment:
-      - MONGO_INITDB_ROOT_USERNAME=${MONGO_INITDB_ROOT_USERNAME}
-      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_INITDB_ROOT_PASSWORD}
+      - QDRANT__LOG_LEVEL=info      # Optional: Set log level
     networks:
       - backend
-    restart: always
-
-
+    restart: always  # Restart container if it crashes
 
 networks:
-  backend:
+  backend:  # Define the network for inter-service communication
 
 volumes:
-  mongodata:
+  qdrantdata:  # Named volume to persist Qdrant storage
