@@ -7,7 +7,15 @@ from models.db_schemes import RetrievedDocument
 from qdrant_client.local.qdrant_local import QdrantLocal
 from portalocker.exceptions import AlreadyLocked
 
+_instance = None
+
 class QdrantDBProvider(VectorDBInterface):
+
+    def __new__(cls, db_path: str, *args, **kwargs):
+        global _instance
+        if _instance is None:
+            _instance = super(QdrantDBProvider, cls).__new__(cls)
+        return _instance
 
     def __init__(self, db_path: str, distance_method: str):
 
