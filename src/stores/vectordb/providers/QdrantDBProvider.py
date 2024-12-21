@@ -4,6 +4,8 @@ from ..VectorDBEnums import DistanceMethodEnums
 import logging
 from typing import List
 from models.db_schemes import RetrievedDocument
+from qdrant_client.local.qdrant_local import QdrantLocal
+from portalocker.exceptions import AlreadyLocked
 
 class QdrantDBProvider(VectorDBInterface):
 
@@ -21,10 +23,27 @@ class QdrantDBProvider(VectorDBInterface):
         self.logger = logging.getLogger(__name__)
 
     def connect(self):
-        self.client = QdrantClient(path=self.db_path)
+        try:
+            self.client = QdrantClient(path=self.db_path)
+            self.logger.info("Connected to Qdrant at local path: %s", self.db_path)
+        except AlreadyLocked as e:
+            self.logger.error(
+                "Database already locked at path: %s. Please check for other active instances.", 
+                self.db_path
+            )
+            raise RuntimeError("Unable to connect to Qdrant. Database is locked.") from e
+        except Exception as e:
+            self.logger.error("Failed to connect to Qdrant: %s", str(e))
+            raise
+
 
     def disconnect(self):
-        self.client = None
+        if self.client is not None:
+            self.logger.info("Disconnecting Qdrant client.")
+            self.client = None
+        else:
+            self.logger.warning("Attempted to disconnect, but no client was active.")
+
 
     def is_collection_existed(self, collection_name: str) -> bool:
         return self.client.collection_exists(collection_name=collection_name)
