@@ -23,7 +23,8 @@ class QdrantDBProvider(VectorDBInterface):
 
     def connect(self):
         try:
-            self.client = QdrantClient(host="localhost", port=6333)
+            print("Connecting to Qdrant at local path: %s", self.db_path)
+            self.client = QdrantClient(self.db_path)
             self.logger.info("Connected to Qdrant at local path: %s", self.db_path)
         except AlreadyLocked as e:
             self.logger.error(
