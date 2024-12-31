@@ -31,3 +31,30 @@ footer_prompt = Template("\n".join([
     "",
     "## A:nswer",
 ]))
+
+
+
+summaries_footer_prompt = Template(
+    "\n".join([
+        "### Intermediate Summaries:",
+        "```",
+        "$summaries",
+        "```",
+        "",
+        "Based on the above summaries, generate a final cohesive summary that captures the main ideas comprehensively and concisely.",
+        "",
+        "## Final Summary:"
+    ])
+)
+
+
+summaries_document_prompt = Template(
+    "\n".join([
+        "### Text to Summarize:",
+        "```",
+        "$chunk_text",
+        "```",
+        "",
+        "Please summarize the content above in a concise and clear manner."
+    ])
+)

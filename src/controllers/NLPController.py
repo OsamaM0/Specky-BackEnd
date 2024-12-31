@@ -25,7 +25,7 @@ class NLPController(BaseController):
     def get_vector_db_collection_info(self, project: Project):
         collection_name = self.create_collection_name(project_id=project.project_id)
         collection_info = self.vectordb_client.get_collection_info(collection_name=collection_name)
-
+    
         return json.loads(
             json.dumps(collection_info, default=lambda x: x.__dict__)
         )
@@ -134,4 +134,35 @@ class NLPController(BaseController):
         )
 
         return answer, full_prompt, chat_history
+    
+    def summarize_text(self, retrieved_documents: List[DataChunk], group_size: int = 5):
+        # Step 1: Retrieve relevant chunks
+        print(retrieved_documents)
+        if not retrieved_documents or len(retrieved_documents) == 0:
+            return None, None, None
+
+        # Step 2: Extract chunk texts
+        chunks = [doc.chunk_text for doc in retrieved_documents]
+        # print(chunks)
+        # Step 3: Apply hierarchical summarization
+        intermediate_summaries = []
+        for i in range(0, len(chunks), group_size):
+            group_texts = "\n".join(chunks[i:i + group_size])
+
+            group_summary = self.generation_client.generate_text(
+                prompt=self.template_parser.get("rag", "summaries_document_prompt", {
+                    "chunk_text": group_texts
+                }),
+            )
+            print(group_summary)
+            intermediate_summaries.append(group_summary)
+
+        # Step 4: Final summary
+        final_summary = self.generation_client.generate_text(
+            prompt=self.template_parser.get("rag", "summaries_footer_prompt", {
+                "summaries": "\n".join(intermediate_summaries)
+            }),
+        )
+
+        return final_summary, intermediate_summaries
 

@@ -1,6 +1,6 @@
 from fastapi import FastAPI, APIRouter, status, Request
 from fastapi.responses import JSONResponse
-from routes.schemes.nlp import PushRequest, SearchRequest
+from routes.schemes.nlp import PushRequest, SearchRequest, SummaryRequest, TranslationRequest
 from models.ProjectModel import ProjectModel
 from models.ChunkModel import ChunkModel
 from controllers import NLPController
@@ -51,7 +51,7 @@ async def index_project(request: Request, project_id: str, push_request: PushReq
     idx = 0
 
     while has_records:
-        page_chunks = await chunk_model.get_poject_chunks(project_id=project.id, page_no=page_no)
+        page_chunks = await chunk_model.get_project_chunks(project_id=project.id, page_no=page_no)
         if len(page_chunks):
             page_no += 1
         
@@ -188,5 +188,109 @@ async def answer_rag(request: Request, project_id: str, search_request: SearchRe
             "answer": answer,
             "full_prompt": full_prompt,
             "chat_history": chat_history
+        }
+    )
+
+
+
+@nlp_router.post("/translate/{project_id}")
+async def translate_text(request: Request, project_id: str, translation_request: TranslationRequest):
+    """
+    Endpoint for translating text to a target language
+    """
+    project_model = await ProjectModel.create_instance(
+        db_client=request.app.db_client
+    )
+
+    project = await project_model.get_project_or_create_one(
+        project_id=project_id
+    )
+
+    nlp_controller = NLPController(
+        vectordb_client=request.app.vectordb_client,
+        generation_client=request.app.generation_client,
+        embedding_client=request.app.embedding_client,
+        template_parser=request.app.template_parser,
+    )
+
+    translated_text, full_prompt, chat_history = nlp_controller.translate_text(
+        project=project,
+        text=translation_request.text,
+        target_language=translation_request.target_language
+    )
+
+    if not translated_text:
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content={
+                "signal": ResponseSignal.TRANSLATION_ERROR.value
+            }
+        )
+    
+    return JSONResponse(
+        content={
+            "signal": ResponseSignal.TRANSLATION_SUCCESS.value,
+            "translated_text": translated_text,
+            "full_prompt": full_prompt,
+            "chat_history": chat_history
+        }
+    )
+
+
+@nlp_router.post("/index/summry/{project_id}")
+async def summry(request: Request, project_id: str, push_request: PushRequest):
+
+    project_model = await ProjectModel.create_instance(
+        db_client=request.app.db_client
+    )
+
+    chunk_model = await ChunkModel.create_instance(
+        db_client=request.app.db_client
+    )
+
+    project = await project_model.get_project_or_create_one(
+        project_id=project_id
+    )
+
+    if not project:
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content={
+                "signal": ResponseSignal.PROJECT_NOT_FOUND_ERROR.value
+            }
+        )
+    
+    nlp_controller = NLPController(
+        vectordb_client=request.app.vectordb_client,
+        generation_client=request.app.generation_client,
+        embedding_client=request.app.embedding_client,
+        template_parser=request.app.template_parser,
+    )
+
+    has_records = True
+    page_no = 1
+    page_chunks_list = []
+    while has_records:
+        page_chunks = await chunk_model.get_project_chunks(project_id=project.id, page_no=page_no)
+        print(page_chunks)
+        if len(page_chunks):
+            page_no += 1
+        
+        page_chunks_list.extend(page_chunks)
+        
+        if not page_chunks or len(page_chunks) == 0:
+            has_records = False
+            break
+    print(page_chunks_list)
+    # get the summary
+    summary = nlp_controller.summarize_text(
+        retrieved_documents=page_chunks_list
+    )
+    
+    
+    return JSONResponse(
+        content={
+            "signal": ResponseSignal.SUMMARY_GENERATION_SUCCESS.value,
+            "summary": summary
         }
     )
