@@ -1,11 +1,13 @@
 from fastapi import FastAPI, APIRouter, status, Request
 from fastapi.responses import JSONResponse
-from routes.schemes.nlp import PushRequest, SearchRequest, SummaryRequest, TranslationRequest
+from routes.schemes.nlp import PushRequest, SearchRequest
 from models.ProjectModel import ProjectModel
 from models.ChunkModel import ChunkModel
 from controllers import NLPController
 from models import ResponseSignal
-
+from deep_translator import GoogleTranslator
+from fastapi import APIRouter, Request, status
+from fastapi.responses import JSONResponse
 import logging
 
 logger = logging.getLogger('uvicorn.error')
@@ -193,12 +195,14 @@ async def answer_rag(request: Request, project_id: str, search_request: SearchRe
 
 
 
-@nlp_router.post("/translate/{project_id}")
-async def translate_text(request: Request, project_id: str, translation_request: TranslationRequest):
-    """
-    Endpoint for translating text to a target language
-    """
+@nlp_router.post("/index/translate/{project_id}/{target_language}")
+async def translate_text(request: Request, project_id: str, target_language: str):
+
     project_model = await ProjectModel.create_instance(
+        db_client=request.app.db_client
+    )
+
+    chunk_model = await ChunkModel.create_instance(
         db_client=request.app.db_client
     )
 
@@ -206,39 +210,57 @@ async def translate_text(request: Request, project_id: str, translation_request:
         project_id=project_id
     )
 
-    nlp_controller = NLPController(
-        vectordb_client=request.app.vectordb_client,
-        generation_client=request.app.generation_client,
-        embedding_client=request.app.embedding_client,
-        template_parser=request.app.template_parser,
-    )
-
-    translated_text, full_prompt, chat_history = nlp_controller.translate_text(
-        project=project,
-        text=translation_request.text,
-        target_language=translation_request.target_language
-    )
-
-    if not translated_text:
+    if not project:
         return JSONResponse(
             status_code=status.HTTP_400_BAD_REQUEST,
             content={
-                "signal": ResponseSignal.TRANSLATION_ERROR.value
+                "signal": ResponseSignal.PROJECT_NOT_FOUND_ERROR.value
+            }
+        )
+
+    has_records = True
+    page_no = 1
+    page_chunks_list = []
+    while has_records:
+        page_chunks = await chunk_model.get_project_chunks(project_id=project.id, page_no=page_no)
+        if len(page_chunks):
+            page_no += 1
+        
+        page_chunks_list.extend(page_chunks)
+        
+        if not page_chunks or len(page_chunks) == 0:
+            has_records = False
+            break
+
+    # Join all chunks into a single text
+    full_text = " ".join(chunk.chunk_text for chunk in page_chunks_list)
+    
+    # Translate the text
+    try:
+        print(full_text)
+        translated_text = GoogleTranslator(source="auto", target=target_language).translate(full_text)
+        print(translated_text)
+    except Exception as e:
+        return JSONResponse(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            content={
+                "signal": ResponseSignal.TRANSLATION_ERROR.value,
+                "error": str(e)
             }
         )
     
     return JSONResponse(
         content={
             "signal": ResponseSignal.TRANSLATION_SUCCESS.value,
-            "translated_text": translated_text,
-            "full_prompt": full_prompt,
-            "chat_history": chat_history
+            "translation": translated_text
         }
     )
 
 
 @nlp_router.post("/index/summry/{project_id}")
-async def summry(request: Request, project_id: str, push_request: PushRequest):
+async def summry(request: Request, 
+                 project_id: str,
+                 target_word_count: int):
 
     project_model = await ProjectModel.create_instance(
         db_client=request.app.db_client
@@ -281,12 +303,22 @@ async def summry(request: Request, project_id: str, push_request: PushRequest):
         if not page_chunks or len(page_chunks) == 0:
             has_records = False
             break
-    print(page_chunks_list)
+    
+    if target_word_count > len(" ".join([chunk.chunk_text for chunk in page_chunks_list])):
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content={
+                "signal": ResponseSignal.SUMMARY_GENERATION_ERROR.value,
+                "error": "Target word count is greater than the total word count"
+            }
+        )
+    
     # get the summary
     summary = nlp_controller.summarize_text(
-        retrieved_documents=page_chunks_list
+        retrieved_documents=page_chunks_list,
+        target_word_count=target_word_count
+        
     )
-    
     
     return JSONResponse(
         content={

@@ -21,4 +21,6 @@ class ResponseSignal(Enum):
     RAG_ANSWER_SUCCESS = "rag_answer_success"
     SUMMARY_GENERATION_ERROR = "summary_generation_error"
     SUMMARY_GENERATION_SUCCESS = "summary_generation_success"
+    TRANSLATION_SUCCESS = "translation_success"
+    TRANSLATION_ERROR = "translation_error"
     
