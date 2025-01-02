@@ -134,8 +134,8 @@ class NLPController(BaseController):
         )
 
         return answer, full_prompt, chat_history
-    
-    def summarize_text(self, retrieved_documents: List[DataChunk], group_size: int = 5):
+
+    def summarize_text(self, retrieved_documents: List[DataChunk], group_size: int = 5, target_word_count: int = 50):
         # Step 1: Retrieve relevant chunks
         print(retrieved_documents)
         if not retrieved_documents or len(retrieved_documents) == 0:
@@ -143,15 +143,17 @@ class NLPController(BaseController):
 
         # Step 2: Extract chunk texts
         chunks = [doc.chunk_text for doc in retrieved_documents]
-        # print(chunks)
+        
         # Step 3: Apply hierarchical summarization
         intermediate_summaries = []
         for i in range(0, len(chunks), group_size):
             group_texts = "\n".join(chunks[i:i + group_size])
 
+            # Modify the prompt to include target word count
             group_summary = self.generation_client.generate_text(
                 prompt=self.template_parser.get("rag", "summaries_document_prompt", {
-                    "chunk_text": group_texts
+                    "chunk_text": group_texts,
+                    "target_word_count": target_word_count // (len(chunks) // group_size or 1),  # Approximate target for this group
                 }),
             )
             print(group_summary)
@@ -160,9 +162,14 @@ class NLPController(BaseController):
         # Step 4: Final summary
         final_summary = self.generation_client.generate_text(
             prompt=self.template_parser.get("rag", "summaries_footer_prompt", {
-                "summaries": "\n".join(intermediate_summaries)
+                "summaries": "\n".join(intermediate_summaries),
+                "target_word_count": target_word_count,  # Final target word count
             }),
         )
 
-        return final_summary, intermediate_summaries
+        # Optionally trim the final summary to match the target word count
+        # final_summary_words = final_summary.split()
+        # if len(final_summary_words) > target_word_count:
+        #     final_summary = " ".join(final_summary_words[:target_word_count])
 
+        return final_summary, intermediate_summaries

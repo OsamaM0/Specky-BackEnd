@@ -30,7 +30,7 @@ voice_router = APIRouter(
 )
 async def transcribe_audio(
     request: Request,
-    audio_file: Optional[UploadFile] = File(..., description="The audio file to transcribe", alias="audio_file"),
+    audio_file: UploadFile = File(..., description="The audio file to transcribe", alias="audio_file"),
     expected_text: str = Form(..., description="The expected text to compare against"),
     language: Optional[str] = Form(default="en", description="Language of the audio")
 ) -> TranscriptionResponse:

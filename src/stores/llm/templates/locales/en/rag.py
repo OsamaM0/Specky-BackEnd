@@ -32,8 +32,6 @@ footer_prompt = Template("\n".join([
     "## A:nswer",
 ]))
 
-
-
 summaries_footer_prompt = Template(
     "\n".join([
         "### Intermediate Summaries:",
@@ -42,6 +40,7 @@ summaries_footer_prompt = Template(
         "```",
         "",
         "Based on the above summaries, generate a final cohesive summary that captures the main ideas comprehensively and concisely.",
+        "The final summary should be approximately $target_word_count words long.",
         "",
         "## Final Summary:"
     ])
