@@ -87,7 +87,7 @@ class VoiceController:
                     change_data["replacement"] = change["replacement"]
 
                     # Generate TTS for replacement text
-                    replacement_audio = self.text_to_speech(change["replacement"])
+                    replacement_audio = self.text_to_speech(change["original"])
                     if replacement_audio:
                         unique_id = str(uuid.uuid4())
                         replacement_audio_path = f"assets/audio_changes/{unique_id}_replacement.mp3"
