@@ -1,127 +1,78 @@
-# Specky
+# Specky (Back-End System)
 
-This is a RAG model for question answering.
-
-# Speaky - Mini-RAG Project Documentation
-
-## Project Overview
-**Speaky** is a Mini-RAG (Retrieval-Augmented Generation) project designed to enable efficient interaction with documentation using advanced natural language processing techniques. It leverages FastAPI for API development, MongoDB for data storage, and vector databases for semantic search. The project architecture follows a modular and scalable design, ensuring flexibility and maintainability.
-
-This document explains the project's directory structure and describes the workflow to help contributors understand the flow of data and functionality.
+🎉 **Specky** is the cutting-edge back-end system designed to empower your applications with AI-driven capabilities for handling files, natural language, and voice interactions. After 200+ hours of development, this is a revolutionary system ready to transform how applications work with data.
 
 ---
 
-## Directory Structure and Workflow
+## Core Features
 
-Below is a detailed breakdown of the directories and their roles within the project, along with an explanation of how the code flows from one module to another.
+### 1. **File Chat**  
+💬 **Engage with Files Seamlessly**  
+Specky enables users to chat with files, regardless of their type. Whether it’s a PDF, Word document, or spreadsheet, you can:  
+- Ask questions about file content.  
+- Extract key information in real-time.  
+- Search across multiple files intelligently.  
 
----
-
-### **1. assets/**
-This directory contains auxiliary files for project setup and testing:
-- **`.gitignore`**: Excludes unnecessary files from Git tracking.
-- **`.gitkeep`**: Preserves empty directories in version control.
-- **`mini-rag-app.postman_collection.json`**: A collection of API endpoints for testing via Postman.
-
-### **How it fits in the workflow:**
-This directory does not directly impact the runtime of the application but supports development and testing. The Postman collection, for instance, is critical for verifying API functionality during and after development.
+**Use Case**: Quickly find insights from a collection of research papers or contracts.
 
 ---
 
-### **2. controllers/**
-This folder contains the **controllers**, which act as intermediaries between the API routes and the underlying logic (models, helpers, etc.). Each controller is responsible for a specific part of the application.
+### 2. **File Translation**  
+🌍 **Translate Files to Any Language**  
+Specky provides robust translation tools for converting file content into any desired language. This feature supports diverse document formats and ensures high-quality, context-aware translations.  
 
-- **`BaseController.py`**: A shared base for all controllers, providing reusable methods and structures.
-- **`DataController.py`**: Handles data-related operations, such as storing and retrieving files or data records.
-- **`NLPController.py`**: Manages natural language processing tasks, including query understanding and semantic search.
-- **`ProcessController.py`**: Oversees the file processing pipeline, splitting documents into manageable chunks.
-- **`ProjectController.py`**: Coordinates project-wide operations and provides endpoints for higher-level functionalities.
-- **`__init__.py`**: Initializes the package.
-
-### **Workflow:**
-1. **Routes** call the respective **controller** to handle incoming requests.
-2. Controllers orchestrate calls to **helpers**, **models**, or external services (e.g., vector DB or LLMs).
-3. Controllers prepare the response to be sent back to the API routes.
+**Use Case**: Make your business documents accessible globally by translating them into multiple languages.
 
 ---
 
-### **3. helpers/**
-The **helpers** folder provides utility scripts and configuration settings that are reused across the project.
+### 3. **File Summarization**  
+📝 **Summarize Content Effortlessly**  
+Generate concise summaries for any file, tailored to your preferred length or page limits. This feature is perfect for extracting the essence of lengthy documents.  
 
-- **`config.py`**: Centralized configuration for environment variables, database connections, and other settings.
-- **`__init__.py`**: Initializes the helpers package.
-
-### **Workflow:**
-Helpers are accessed by **controllers** or other components to:
-1. Load configurations dynamically (e.g., API keys, database URLs).
-2. Provide reusable utility functions.
+**Use Case**: Save time by summarizing a 100-page report into key points or a 500-word summary.
 
 ---
 
-### **4. models/**
-This directory defines the **data models** and schemas used throughout the application. These models are critical for data validation, transformation, and storage.
+### 4. **Pronunciation Correction**  
+🗣️ **Perfect Your Pronunciation**  
+Specky’s AI-driven pronunciation correction ensures accurate verbal communication. It analyzes your input and provides precise feedback for improving spoken language skills.  
 
-- **`AssetModel.py`**: Represents files and related metadata stored in the database.
-- **`BaseDataModel.py`**: A base class for other models, ensuring consistency and reusability.
-- **`ChunkModel.py`**: Defines how text is split into smaller pieces (chunks) for efficient processing.
-- **`db_schemes/`**: Contains database schema definitions for MongoDB collections.
-- **`enums/`**: Provides enumerations for standardizing fixed values (e.g., file types, statuses).
-- **`ProjectModel.py`**: Manages project-specific data models, such as project settings or configurations.
-- **`__init__.py`**: Initializes the models package.
-
-### **Workflow:**
-1. **Controllers** call models to validate data or interact with the database.
-2. Models handle schema definition, database operations, and data consistency.
+**Use Case**: Ideal for learners refining their pronunciation or professionals preparing for presentations.
 
 ---
 
-### **5. routes/**
-Defines the API endpoints and maps them to their respective controllers. This folder organizes the API logic for modularity and scalability.
+### 5. **Text-to-Speech**  
+🔊 **Turn Text into Lifelike Speech**  
+Transform written text into natural, high-quality audio output. This feature enhances accessibility and usability, especially for visually impaired users or those on the go.  
 
-- **`base.py`**: Defines basic endpoints for general-purpose use.
-- **`data.py`**: Handles endpoints for uploading, downloading, and retrieving data.
-- **`nlp.py`**: Provides endpoints for semantic search and NLP-related tasks.
-- **`schemes/`**: Contains Pydantic schemas for validating API request and response payloads.
-- **`__init__.py`**: Initializes the routes package.
-
-### **Workflow:**
-1. A client sends an HTTP request to an endpoint defined in **routes**.
-2. The route invokes the corresponding **controller** method.
-3. After processing, a response is sent back to the client.
+**Use Case**: Generate audio guides or narrations for eBooks effortlessly.
 
 ---
 
-### **6. stores/**
-The **stores** directory contains components for managing external integrations, specifically LLMs (Large Language Models) and vector databases.
+### 6. **Speech-to-Text**  
+🎙️ **Convert Speech into Accurate Text**  
+Record and transcribe spoken words into accurate text. This feature is indispensable for creating meeting notes, captions, or analyzing conversations.  
 
-- **`llm/`**: Manages the integration and usage of LLMs, such as GPT models.
-- **`vectordb/`**: Handles operations on the vector database (e.g., QDrant), enabling semantic search and retrieval.
-
-### **Workflow:**
-1. **Controllers** interact with **stores** to process complex tasks.
-   - For instance, the **NLPController** may query the **vectordb** to retrieve relevant document chunks based on a user query.
-2. Results are processed and returned to the **controller** for further action.
+**Use Case**: Automate transcription for meetings, lectures, or interviews.
 
 ---
 
-## Application Workflow
+## Why Specky?
 
-The following steps explain the typical workflow in the application:
+- **AI-Powered**: Leveraging the power of Retrieval-Augmented Generation (RAG) for high efficiency.  
+- **Multi-File Capability**: Handle diverse file types and formats.  
+- **Scalable Solutions**: Perfect for individual users or large enterprises.  
+- **Integrated Workflows**: Seamlessly connect NLP, voice, and data processing into one platform.
 
-### 1. **Uploading a File**
-- **Routes (data.py)**: The `/upload` endpoint receives the file.
-- **DataController.py**: Validates and stores the file in the database via the **AssetModel**.
-- **ProcessController.py**: Processes the file into text chunks using **ChunkModel**, stores the chunks in the **vectordb**, and updates metadata in the database.
+---
 
-### 2. **Semantic Search**
-- **Routes (nlp.py)**: The `/search` endpoint receives a user query.
-- **NLPController.py**: Processes the query using an LLM from the **stores/llm/** and retrieves relevant chunks from **stores/vectordb/**.
-- **Response**: Combines the LLM output with retrieved data chunks to generate an augmented answer.
+## Get Started
 
-### 3. **Project Management**
-- **Routes (base.py or project-specific)**: Provides project-level configurations and summaries.
-- **ProjectController.py**: Coordinates project-wide operations like fetching stats or configuring settings.
+1. **Create an Account**: Sign up on [Specky](https://www.specky.com).  
+2. **Setup API Access**: Secure your API credentials.  
+3. **Start Using Features**: Implement the workflows into your application.
 
+---
 
 
 ## Requirements
