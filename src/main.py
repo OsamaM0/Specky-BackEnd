@@ -6,6 +6,8 @@ from helpers.config import get_settings
 from stores.llm.LLMProviderFactory import LLMProviderFactory
 from stores.vectordb.VectorDBProviderFactory import VectorDBProviderFactory
 from stores.llm.templates.template_parser import TemplateParser
+from fastapi.middleware.cors import CORSMiddleware
+
 
 app = FastAPI()
 
@@ -58,6 +60,14 @@ app.include_router(data.data_router)
 app.include_router(nlp.nlp_router)
 # app.include_router(document.voice_router)
 app.include_router(voice.voice_router)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Change this to restrict access
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 # if __name__ == "__main__":
