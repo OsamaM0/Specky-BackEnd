@@ -237,9 +237,10 @@ async def translate_text(request: Request, project_id: str, target_language: str
     
     # Translate the text
     try:
-        print(full_text)
-        translated_text = GoogleTranslator(source="auto", target=target_language).translate(full_text)
-        print(translated_text)
+        translate_text = ""
+        for i in range(0, len(full_text), 5000):
+            translated_text = GoogleTranslator(source="auto", target=target_language).translate(full_text[i:i+5000])
+            translate_text += translated_text
     except Exception as e:
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
