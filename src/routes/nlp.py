@@ -256,7 +256,7 @@ async def translate_text(request: Request, project_id: str, target_language: str
     return JSONResponse(
         content={
             "signal": ResponseSignal.TRANSLATION_SUCCESS.value,
-            "translation": translated_text
+            "translation": translate_text
         }
     )
 
