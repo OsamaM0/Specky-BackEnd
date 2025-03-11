@@ -1,3 +1,4 @@
+import time 
 from fastapi import FastAPI, APIRouter, status, Request
 from fastapi.responses import JSONResponse
 from routes.schemes.nlp import PushRequest, SearchRequest
@@ -238,9 +239,11 @@ async def translate_text(request: Request, project_id: str, target_language: str
     # Translate the text
     try:
         translate_text = ""
-        for i in range(0, len(full_text), 5000):
-            translated_text = GoogleTranslator(source="auto", target=target_language).translate(full_text[i:i+5000])
+        for i in range(0, len(full_text), 4000):
+            translated_text = GoogleTranslator(source="auto", target=target_language).translate(full_text[i:i+4000])
             translate_text += translated_text
+            # sleep for 1 sec
+            time.sleep(1)
     except Exception as e:
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
