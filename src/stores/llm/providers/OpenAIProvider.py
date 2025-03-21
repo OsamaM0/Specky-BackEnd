@@ -109,6 +109,7 @@ class OpenAIProvider(LLMInterface):
             file=open(audio_filepath, "rb"),
             model=OpenAIEnums.STT.value,
             prompt=prompt,
+            language=language
         )
         return transcript.text
     
